@@ -21,7 +21,7 @@ jobs:
       run: |
         # *** YOU MUST CHANGE THIS URL TO THE ACTUAL ZIPPED FOLDER ON GITHUB ***
         # Example: If the original file is at https://github.com/someone/somerepo/archive/refs/heads/main.zip
-        curl -L "https://github.com/OWNER/REPO/archive/refs/heads/main.zip" -o data.zip
+        curl -L "https://github.com/dfe-analytical-services/attendance-data-dashboard/raw/refs/heads/main/data/attendance_data_dashboard.zip" -o data.zip
       # How to find the URL:
       # Go to the GitHub page of the zipped folder.
       # Look for a "Download ZIP" button or a link that ends in .zip
