@@ -1,0 +1,48 @@
+name: Unzip and Push CSV Monthly
+
+on:
+  schedule:
+    # This tells the robot to run at 00:00 UTC on the 1st of every month
+    - cron: '0 0 1 * *' 
+  workflow_dispatch: # This lets you manually tell the robot "do it now!"
+
+jobs:
+  unzip_and_push:
+    runs-on: ubuntu-latest # The robot will run on a virtual computer running Ubuntu Linux
+
+    steps:
+    - name: Get your own repository ready
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository }} # This means "your current repo" (my-monthly-csv)
+        token: ${{ secrets.GH_PAT }} # Use the secret key we just set up
+
+    - name: Download the zipped folder from the source
+      run: |
+        # *** YOU MUST CHANGE THIS URL TO THE ACTUAL ZIPPED FOLDER ON GITHUB ***
+        # Example: If the original file is at https://github.com/someone/somerepo/archive/refs/heads/main.zip
+        curl -L "https://github.com/OWNER/REPO/archive/refs/heads/main.zip" -o data.zip
+      # How to find the URL:
+      # Go to the GitHub page of the zipped folder.
+      # Look for a "Download ZIP" button or a link that ends in .zip
+      # Right-click on it and choose "Copy Link Address" or "Copy Link".
+      # Paste that link in place of "https://github.com/OWNER/REPO/archive/refs/heads/main.zip"
+
+    - name: Unzip the folder and find your CSV file
+      run: |
+        unzip data.zip -d extracted_data # Unzips everything into a new folder called 'extracted_data'
+        # This line looks for ANY .csv file inside 'extracted_data' and moves it to 'data.csv'
+        # If your CSV has a specific name or is in a subfolder, you might need to change this.
+        # Example: If your CSV is always 'extracted_data/subfolder/mydata.csv', you'd do:
+        # mv extracted_data/subfolder/mydata.csv data.csv
+        find extracted_data -name "*.csv" -exec mv {} data.csv \;
+
+    - name: Save the updated CSV to your repository
+      run: |
+        git config user.name "GitHub Actions" # This sets who made the change
+        git config user.email "github-actions@github.com" # And their email
+        git add data.csv # Tells Git to prepare the 'data.csv' file for saving
+        git commit -m "Automated update: Monthly CSV data" || echo "No changes to commit" # Saves the file with a message
+        git push # Sends the saved file up to GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }} # Uses your secret key to allow pushing
